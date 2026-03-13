@@ -1,0 +1,8 @@
+rag-chatbot/
+├── .env               ← Groq API key
+├── .gitignore         ← Git ignore rules
+├── requirements.txt   ← Package list
+├── config.py          ← LLM connection
+├── rag_engine.py      ← RAG brain (new concept!)
+├── app.py             ← Streamlit chat interface
+└── venv/

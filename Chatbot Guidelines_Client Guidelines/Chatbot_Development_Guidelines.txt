@@ -1,0 +1,268 @@
+
+════════════════════════════════════════════════════════════════
+          CHATBOT DEVELOPMENT GUIDELINES
+          Professional Standards for RAG Chatbot Projects
+          Prepared by: Aamir Qadeer — AI Engineer
+════════════════════════════════════════════════════════════════
+
+
+1. ARCHITECTURE GUIDELINES
+────────────────────────────────────────────────────────────────
+Single Responsibility
+   Each file in the project does ONE job only. config.py handles
+   LLM connection, rag_engine.py handles document processing,
+   and app.py handles the user interface. No file should do
+   more than one job.
+
+Separation of Concerns
+   The user interface (app.py) must be completely separate from
+   the business logic (rag_engine.py). This makes the code
+   easier to maintain, test, and update independently.
+
+Config Centralized
+   All settings, model names, temperature values, chunk sizes,
+   and API connections must live in config.py only. Never
+   hardcode settings inside other files.
+
+Error Handling
+   Every function must handle failures gracefully. Users should
+   never see raw Python error messages. Always show friendly,
+   professional error messages instead.
+
+
+2. RAG SPECIFIC GUIDELINES
+────────────────────────────────────────────────────────────────
+What is RAG?
+   RAG stands for Retrieval Augmented Generation. It is the
+   process of giving an LLM access to a specific document so
+   it can answer questions based on that document rather than
+   its general training knowledge.
+
+Chunk Size
+   Documents must be split into smaller pieces called chunks
+   before processing. Recommended chunk size is 1000 characters.
+   Too large and the LLM gets confused. Too small and context
+   is lost.
+
+Chunk Overlap
+   Consecutive chunks should overlap by 200 characters. This
+   ensures that sentences split across two chunks are still
+   understood correctly by the LLM.
+
+Vector Store
+   Document chunks are converted into numerical representations
+   called embeddings and stored in a vector database (FAISS).
+   This allows fast and intelligent search across the document.
+
+Retrieval
+   When a user asks a question only the most relevant chunks
+   are retrieved from the vector store and passed to the LLM.
+   Recommended retrieval is top 4 most relevant chunks.
+
+Conversation Memory
+   The chatbot must maintain conversation history so users can
+   ask follow up questions naturally without repeating context.
+
+
+3. SECURITY GUIDELINES
+────────────────────────────────────────────────────────────────
+API Keys
+   All API keys must be stored in a .env file only. They must
+   never appear inside Python files, README files, or any file
+   that gets pushed to GitHub.
+
+User Uploads
+   Always validate that uploaded files are the correct type
+   (PDF only) and warn users if files are too large to process
+   efficiently.
+
+No Sensitive Data Logging
+   Never log or store the content of user uploaded documents.
+   User documents are private and must be treated with respect.
+
+Secrets Management
+   The .env file must always be listed in .gitignore to prevent
+   accidental upload to GitHub. This is non negotiable.
+
+GitHub Safety
+   Before every git push always run git status to confirm that
+   .env is not included in the files being uploaded.
+
+
+4. UI/UX GUIDELINES FOR CHATBOTS
+────────────────────────────────────────────────────────────────
+Clear Input Field
+   The chat input box must be clearly visible and labeled so
+   users immediately know where to type their questions.
+
+Loading Indicator
+   Always show a spinner or progress message while the AI is
+   thinking. Never leave the user staring at a blank screen.
+
+Chat History
+   All previous messages in the conversation must remain
+   visible on screen. Users should be able to scroll up and
+   read the full conversation history.
+
+Friendly Error Messages
+   When something goes wrong show a simple human friendly
+   message. Never show raw Python tracebacks to end users.
+
+File Upload
+   The PDF upload button must be prominent and clearly labeled.
+   Show the user confirmation once their file has been
+   successfully processed and is ready to chat with.
+
+Response Formatting
+   LLM responses should be displayed in clean readable format
+   with proper spacing. Use markdown rendering where possible
+   for better readability.
+
+
+5. CODE QUALITY GUIDELINES
+────────────────────────────────────────────────────────────────
+Comments
+   Every function must have a comment explaining WHY it exists
+   not just what it does. Future developers (and your future
+   self) will thank you.
+
+Functions
+   Keep functions small and focused on a single purpose.
+   If a function is longer than 20 lines it probably needs
+   to be split into smaller functions.
+
+Variable Names
+   Use descriptive variable names that explain what the
+   variable contains. Avoid single letter variables except
+   in simple loops.
+
+No Hardcoding
+   Never hardcode values like model names, chunk sizes, or
+   temperature values directly in functions. Always reference
+   them from config.py so they can be changed in one place.
+
+Consistent Style
+   Follow PEP 8 Python style guidelines throughout the project.
+   Use 4 spaces for indentation, leave two blank lines between
+   functions, and keep lines under 80 characters where possible.
+
+
+6. LLM GUIDELINES
+────────────────────────────────────────────────────────────────
+System Prompt
+   Always provide a clear system prompt that tells the LLM
+   exactly how to behave. For RAG chatbots the system prompt
+   must instruct the LLM to answer only from the provided
+   document context.
+
+Temperature Setting
+   Use temperature 0.3 for factual document chatbots. This is
+   lower than general purpose applications (0.7) because we
+   want accurate factual answers not creative ones.
+
+Max Tokens
+   Always set a reasonable max token limit on responses to
+   prevent excessively long answers and control API costs.
+
+Context Window
+   Be aware of the model's context window limit. Never pass
+   more text to the LLM than it can process in one request.
+
+Fallback Handling
+   When the LLM cannot find the answer in the document it must
+   respond with a clear message rather than hallucinating an
+   answer. Example response:
+   "I could not find the answer to your question in the
+   uploaded document. Please ask something related to the
+   document content."
+
+Hallucination Prevention
+   Instruct the LLM explicitly in the system prompt to never
+   make up information and to only use the provided context
+   when answering questions.
+
+
+7. DOCUMENT PROCESSING GUIDELINES
+────────────────────────────────────────────────────────────────
+Supported Formats
+   Support PDF files only in the initial version. Additional
+   formats like DOCX and TXT can be added in future versions.
+
+File Size Warning
+   Warn users if their PDF is very large (over 10MB) as
+   processing time will be longer than usual.
+
+Text Extraction
+   Use pypdf for reliable text extraction from PDF files.
+   Always handle cases where a PDF is scanned (image based)
+   and text cannot be extracted.
+
+Chunk Size Recommendation
+   Use 1000 characters per chunk with 200 character overlap
+   as the default setting. These values are tested and proven
+   to work well for most document types.
+
+Embedding Model
+   Use a consistent embedding model throughout the project.
+   Never mix different embedding models in the same vector
+   store as this causes incorrect search results.
+
+Vector Store Persistence
+   For production applications consider saving the vector
+   store to disk so documents do not need to be reprocessed
+   on every session. For portfolio projects in memory storage
+   is acceptable.
+
+
+8. TESTING GUIDELINES
+────────────────────────────────────────────────────────────────
+Test With Different Documents
+   Always test the chatbot with at least three different PDF
+   documents of varying lengths and topics before deployment.
+
+Test Edge Cases
+   Test what happens when:
+   - User asks a question not in the document
+   - User uploads a scanned PDF with no extractable text
+   - User asks a very long or complex question
+   - User uploads a very large PDF file
+
+Test Conversation Flow
+   Test multi turn conversations where each question builds
+   on the previous answer to confirm memory is working
+   correctly.
+
+
+════════════════════════════════════════════════════════════════
+PROJECT FILE STRUCTURE FOLLOWING THESE GUIDELINES
+════════════════════════════════════════════════════════════════
+
+rag-chatbot/
+├── .env                 ← API keys (never on GitHub)
+├── .gitignore           ← protects .env and venv
+├── requirements.txt     ← package list for deployment
+├── config.py            ← all settings centralized here
+├── rag_engine.py        ← document processing and RAG logic
+├── app.py               ← Streamlit UI only
+└── venv/                ← virtual environment (never on GitHub)
+
+
+════════════════════════════════════════════════════════════════
+RECOMMENDED SETTINGS SUMMARY
+════════════════════════════════════════════════════════════════
+
+LLM Model         : groq/llama-3.3-70b-versatile
+Temperature       : 0.3
+Chunk Size        : 1000 characters
+Chunk Overlap     : 200 characters
+Retrieval Count   : Top 4 most relevant chunks
+Max File Size     : 10 MB recommended
+Supported Formats : PDF only (v1.0)
+Vector Store      : FAISS (in memory)
+Embedding Model   : HuggingFace all-MiniLM-L6-v2
+
+
+════════════════════════════════════════════════════════════════
+          END OF CHATBOT DEVELOPMENT GUIDELINES
+          Version 1.0 — March 2026
+════════════════════════════════════════════════════════════════

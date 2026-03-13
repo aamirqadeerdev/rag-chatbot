@@ -4,7 +4,7 @@
 An AI-powered document chatbot built with LangChain, Groq, and Streamlit. Upload any PDF document and have an intelligent conversation with it. The chatbot answers questions based strictly on the document content — never making up information.
 
 ## Live Demo
-[Click here to try the app]() ← We will add this link after Streamlit deployment
+(https://rag-chatbot-cna6hu4slxnmvkhssgah3g.streamlit.app) ← We will add this link after Streamlit deployment
 
 ## What It Does
 

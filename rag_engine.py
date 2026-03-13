@@ -69,10 +69,12 @@ def get_answer(conversation_chain, question, chat_history):
         docs = retriever.invoke(question)
         context = "\n\n".join(doc.page_content for doc in docs)
         
-        # Get answer directly
-        answer = chain.invoke(
-            f"Context: {context}\n\nChat History: {history_text}\n\nQuestion: {question}"
-        )
+        # Get answer using correct input format
+        answer = chain.invoke({
+            "context": context,
+            "chat_history": history_text,
+            "question": question
+        })
         
         return answer
     
